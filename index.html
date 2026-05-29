@@ -95,7 +95,9 @@
             height: calc(100% - 120px);
         }
 
-        .panel-img { width: 100%; height: 140px; background: linear-gradient(135deg, #bfa15f, #8a3333); object-fit: cover; }
+        /* 🔴 修正箇所: ここを黒(#000000)に変更しました */
+        .panel-img { width: 100%; height: 140px; background: #000000; object-fit: cover; }
+        
         .panel-content { padding: 15px; overflow-y: auto; flex: 1; font-size: 0.85rem; }
         .panel-content h2 { margin: 0 0 8px 0; font-size: 1.2rem; }
         .panel-content p { margin: 0 0 15px 0; line-height: 1.4; color: #333; }
@@ -104,7 +106,7 @@
         .weather-today { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .weather-forecast { display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid #ccc; padding-top: 8px; text-align: center; }
 
-        /* 右側：コントロールパネル（歴史ツアー、寺社巡りを削除） */
+        /* 右側：コントロールパネル */
         .control-panel {
             width: 220px;
             background: var(--card-bg);
@@ -152,7 +154,7 @@
         .timeline-slider { width: 100%; accent-color: #bfa15f; cursor: pointer; }
         .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #333; margin-top: 5px; font-weight: bold;}
 
-        /* 右下：ホームページリンクボックス（新デザイン） */
+        /* 右下：ホームページリンクボックス */
         .hp-link-box { 
             background: var(--card-bg); 
             padding: 15px 20px; 
@@ -269,7 +271,7 @@
         let map;
         let markerGroup;
 
-        // 各観光地のデータに「公式HP用URL (url)」と「ボタン名 (siteName)」を追加
+        // 各観光地のデータ
         const monthlyDestinations = {
             1: { title: "白川郷 (岐阜県)", lat: 36.2563, lng: 136.9061, zoom: 11, desc: "1月は一面の銀世界と、幻想的な合掌造り集落のライトアップが美しい積雪のピークシーズンです。", url: "https://shirakawa-go.gr.jp/", siteName: "白川郷 公式HP" },
             2: { title: "札幌 (北海道)", lat: 43.0621, lng: 141.3544, zoom: 12, desc: "2月上旬には大通公園を中心に「さっぽろ雪まつり」が開催され、迫力ある大雪氷像が並びます。", url: "https://www.snowfes.com/", siteName: "さっぽろ雪まつり 公式" },
@@ -321,7 +323,7 @@
 
             showSpotDetails(data.title, data.desc);
             
-            // 右下のホームページ用リンクとボタン文字を、動いた先の観光地のものに更新
+            // 右下のホームページ用リンクとボタン文字を更新
             const linkElement = document.getElementById('hp-link');
             const btnTextElement = document.getElementById('hp-btn-text');
             linkElement.href = data.url;

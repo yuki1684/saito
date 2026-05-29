@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日本観光地図 | JAPAN MAPS (オープン地図版)</title>
+    <title>観光時期マップ</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -11,6 +11,8 @@
             --card-bg: rgba(255, 255, 255, 0.95);
             --text-main: #333333;
             --accent-color: #8a3333;
+            --btn-bg: #bfa15f;
+            --btn-hover: #a38546;
         }
 
         body {
@@ -32,17 +34,15 @@
             align-items: center;
             padding: 10px 25px;
             background-color: var(--bg-color);
-            z-index: 1000; /* 地図より上にする */
+            z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .logo-area { display: flex; align-items: center; gap: 12px; }
         .logo-icon { width: 45px; height: 45px; border: 2px solid var(--text-main); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; }
         .logo-title h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; }
-        .logo-title p { margin: 0; font-size: 0.8rem; color: #666; }
+        
         .header-right { display: flex; align-items: center; gap: 20px; }
-        .lang-selector span { margin: 0 5px; font-size: 0.9rem; cursor: pointer; color: #777; }
-        .lang-selector .active { font-weight: bold; color: var(--text-main); text-decoration: underline; }
         .search-bar { display: flex; align-items: center; background: #fff; border-radius: 20px; padding: 5px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .search-bar input { border: none; outline: none; padding: 5px; width: 150px; font-size: 0.9rem; }
         .search-btn { background: var(--accent-color); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
@@ -54,7 +54,6 @@
             box-sizing: border-box;
         }
 
-        /* 地図の土台 */
         #map {
             width: 100%;
             height: 100%;
@@ -62,6 +61,7 @@
             top: 0;
             left: 0;
             z-index: 1;
+            background: #e0ddd5;
         }
 
         /* UI重ね合わせ用のコンテナ */
@@ -71,7 +71,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 10; /* 地図上のピンより上に配置 */
+            z-index: 10;
             pointer-events: none;
             display: flex;
             justify-content: space-between;
@@ -92,13 +92,10 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            height: calc(100% - 100px);
+            height: calc(100% - 120px);
         }
 
         .panel-img { width: 100%; height: 140px; background: linear-gradient(135deg, #bfa15f, #8a3333); object-fit: cover; }
-        .panel-tabs { display: flex; border-bottom: 1px solid #eee; background: rgba(250,250,250,0.8); }
-        .tab { flex: 1; text-align: center; padding: 8px 0; font-size: 0.7rem; font-weight: bold; color: #777; cursor: pointer; }
-        .tab.active { color: var(--text-main); border-bottom: 2px solid var(--text-main); background: #fff; }
         .panel-content { padding: 15px; overflow-y: auto; flex: 1; font-size: 0.85rem; }
         .panel-content h2 { margin: 0 0 8px 0; font-size: 1.2rem; }
         .panel-content p { margin: 0 0 15px 0; line-height: 1.4; color: #333; }
@@ -107,7 +104,7 @@
         .weather-today { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .weather-forecast { display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid #ccc; padding-top: 8px; text-align: center; }
 
-        /* 右側：表示ON・OFFコントロールパネル */
+        /* 右側：コントロールパネル（歴史ツアー、寺社巡りを削除） */
         .control-panel {
             width: 220px;
             background: var(--card-bg);
@@ -118,6 +115,7 @@
         }
 
         .control-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; }
+        .control-item:last-child { margin-bottom: 0; }
 
         /* トグルスイッチ */
         .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
@@ -139,21 +137,53 @@
             pointer-events: none;
         }
 
-        .timeline-box { background: var(--card-bg); padding: 10px 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); width: 320px; }
-        .timeline-tags { display: flex; gap: 10px; margin-bottom: 5px; }
-        .time-tag { background: #eee; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; cursor: pointer; }
-        .time-tag.active { background: #e2d9c5; font-weight: bold; }
-        .timeline-slider { width: 100%; accent-color: #bfa15f; }
-        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #555; margin-top: 2px; }
+        .timeline-box { 
+            background: var(--card-bg); 
+            padding: 15px 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
+            width: 500px; 
+        }
+        
+        .timeline-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between;}
+        .current-month-display { color: var(--accent-color); font-size: 1rem; }
 
-        .event-box { background: var(--card-bg); padding: 12px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 450px; }
-        .event-header { font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; display: flex; gap: 15px; }
-        .event-header span { cursor: pointer; color: #777; }
-        .event-header span.active { color: #000; border-bottom: 2px solid #000; }
-        .event-carousel { display: flex; align-items: center; gap: 10px; }
-        .carousel-track { display: flex; gap: 8px; overflow: hidden; flex: 1; }
-        .event-item { min-width: 45px; height: 45px; background: #eaddca; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; }
-        .nav-btn { background: none; border: 1px solid #ccc; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; }
+        .slider-wrapper { width: 100%; }
+        .timeline-slider { width: 100%; accent-color: #bfa15f; cursor: pointer; }
+        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #333; margin-top: 5px; font-weight: bold;}
+
+        /* 右下：ホームページリンクボックス（新デザイン） */
+        .hp-link-box { 
+            background: var(--card-bg); 
+            padding: 15px 20px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+            width: 280px; 
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .hp-header { font-size: 0.85rem; font-weight: bold; color: #555; }
+        .hp-btn {
+            background-color: var(--btn-bg);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .hp-btn:hover { background-color: var(--btn-hover); }
+        .hp-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -166,9 +196,6 @@
             </div>
         </div>
         <div class="header-right">
-            <div class="lang-selector">
-                <span class="active">JP</span><span>EN</span>
-            </div>
             <div class="search-bar">
                 <input type="text" placeholder="Search">
                 <button class="search-btn">🔍</button>
@@ -184,15 +211,9 @@
             
             <div class="info-panel">
                 <div class="panel-img"></div>
-                <div class="panel-tabs">
-                    <div class="tab active">OVERVIEW</div>
-                    <div class="tab">SIGHTS</div>
-                    <div class="tab">FOOD</div>
-                    <div class="tab">STAY</div>
-                </div>
                 <div class="panel-content">
-                    <h2 id="spot-title">京都歴史地区</h2>
-                    <p id="spot-desc">ピンをクリックすると、ここに各観光地の詳細情報が表示されます。</p>
+                    <h2 id="spot-title">白川郷 (岐阜県)</h2>
+                    <p id="spot-desc">下部のタイムラインバーを動かすと、各月のおすすめ観光地にピンが移動します。ピンを直接クリックしても詳細が表示されます。</p>
                     
                     <div class="weather-box">
                         <div class="weather-today">
@@ -216,35 +237,27 @@
                     <label class="switch"><input type="checkbox" id="toggle-markers" checked><span class="slider"></span></label>
                 </div>
                 <div class="control-item"><span>アクティビティ</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
-                <div class="control-item"><span>歴史ツアー</span><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
-                <div class="control-item"><span>寺社巡り</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
             </div>
 
             <div class="bottom-container">
                 <div class="timeline-box">
-                    <div class="timeline-tags">
-                        <span class="time-tag active">四季のイベント</span><span class="time-tag">お祭り</span>
+                    <div class="timeline-title">
+                        <span>観光シーズン選択</span>
+                        <span class="current-month-display" id="month-display">選択中: 1月</span>
                     </div>
                     <div class="slider-wrapper">
-                        <input type="range" class="timeline-slider" min="1" max="12" value="1">
+                        <input type="range" class="timeline-slider" id="time-slider" min="1" max="12" value="1">
                         <div class="timeline-labels">
-                            <span>1月</span><span>2月</span><span>3月</span>
+                            <span>1月</span><span>2月</span><span>3月</span><span>4月</span><span>5月</span><span>6月</span><span>7月</span><span>8月</span><span>9月</span><span>10月</span><span>11月</span><span>12月</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="event-box">
-                    <div class="event-header">
-                        <span class="active">四季のイベント</span><span>お祭り</span>
-                    </div>
-                    <div class="event-carousel">
-                        <button class="nav-btn">&lt;</button>
-                        <div class="carousel-track">
-                            <div class="event-item">🎉</div><div class="event-item">🏮</div><div class="event-item">🍜</div>
-                            <div class="event-item">🌸</div><div class="event-item">🎆</div>
-                        </div>
-                        <button class="nav-btn">&gt;</button>
-                    </div>
+                <div class="hp-link-box">
+                    <div class="hp-header">オフィシャル情報</div>
+                    <a href="https://shirakawa-go.gr.jp/" target="_blank" class="hp-btn" id="hp-link">
+                        🌐 <span id="hp-btn-text">白川郷 公式HPへ</span>
+                    </a>
                 </div>
             </div>
 
@@ -256,50 +269,85 @@
         let map;
         let markerGroup;
 
-        const touristSpots = [
-            { title: "金閣寺 (Kinkaku-ji)", lat: 35.0394, lng: 135.7292, desc: "舎利殿「金閣」が特に有名な、室町幕府3代将軍足利義満が描いた極楽浄土の世界を象徴する寺院です。" },
-            { title: "清水寺 (Kiyomizu-dera)", lat: 34.9949, lng: 135.7850, desc: "「清水の舞台」で知られる本堂は崖にせり出すように建てられており、京都市街を一望できます。" },
-            { title: "祇園地区 (Gion District)", lat: 35.0037, lng: 135.7782, desc: "伝統的な格子戸の家々が並び、運が良ければ舞妓さんや芸妓さんに出会える京都を代表する花街・歴史地区です。" }
-        ];
+        // 各観光地のデータに「公式HP用URL (url)」と「ボタン名 (siteName)」を追加
+        const monthlyDestinations = {
+            1: { title: "白川郷 (岐阜県)", lat: 36.2563, lng: 136.9061, zoom: 11, desc: "1月は一面の銀世界と、幻想的な合掌造り集落のライトアップが美しい積雪のピークシーズンです。", url: "https://shirakawa-go.gr.jp/", siteName: "白川郷 公式HP" },
+            2: { title: "札幌 (北海道)", lat: 43.0621, lng: 141.3544, zoom: 12, desc: "2月上旬には大通公園を中心に「さっぽろ雪まつり」が開催され、迫力ある大雪氷像が並びます。", url: "https://www.snowfes.com/", siteName: "さっぽろ雪まつり 公式" },
+            3: { title: "河津 (静岡県)", lat: 34.7471, lng: 138.9272, zoom: 13, desc: "ひと足早く咲き誇る「河津桜」のシーズン。ピンク色の並木道と菜の花のコントラストが絶景です。", url: "https://www.kawazu-onsen.com/sakura/", siteName: "河津桜まつり 公式" },
+            4: { title: "清水寺 (京都府)", lat: 34.9949, lng: 135.7850, zoom: 14, desc: "4月は満開の桜が古都の街並みを彩ります。清水の舞台から見下ろす桜の海は圧巻です。", url: "https://www.kiyomizudera.or.jp/", siteName: "音羽山 清水寺 公式" },
+            5: { title: "富士五湖 (山梨県)", lat: 35.4983, lng: 138.7565, zoom: 11, desc: "新緑が映える季節。富士芝桜まつりなど、残雪の富士山と鮮やかな花の共演が見事です。", url: "https://www.shibazakura.jp/", siteName: "富士芝桜まつり 公式" },
+            6: { title: "美瑛・富良野 (北海道)", lat: 43.5902, lng: 142.4644, zoom: 11, desc: "初夏の北海道は気候も爽やか。6月下旬からは広大なラベンダー畑が徐々に紫色に染まり始めます。", url: "https://www.farm-tomita.co.jp/", siteName: "ファーム富田 公式" },
+            7: { title: "博多 (福岡県)", lat: 33.5904, lng: 130.4206, zoom: 13, desc: "7月は「博多祇園山笠」の熱気に包まれる季節。博多の街を駆け抜ける聁き山笠が夏の到来を告げます。", url: "https://www.hakatayamakasa.com/", siteName: "博多祇園山笠 公式" },
+            8: { title: "大曲 (秋田県)", lat: 39.4651, lng: 140.4735, zoom: 12, desc: "日本の夏の風物詩、全国花火競技大会（大曲の花火）が開催され、夜空に最高峰の芸術が打ち上がります。", url: "https://www.oomagari-hanabi.com/", siteName: "大曲の花火 公式" },
+            9: { title: "嵐山 (京都府)", lat: 35.0156, lng: 135.6715, zoom: 13, desc: "夏の暑さが和らぎ、澄んだ秋空が広がる季節。桂川に架かる渡月橋や竹林の小径の散策が快適です。", url: "https://ja.kyoto.travel/", siteName: "京都観光Navi 公式" },
+            10: { title: "日光東照宮 (栃木県)", lat: 36.7581, lng: 139.5992, zoom: 12, desc: "日本屈指の紅葉の名所。10月中旬からいろは坂や中禅寺湖周辺が見事な紅葉に包まれます。", url: "https://www.toshogu.jp/", siteName: "日光東照宮 公式" },
+            11: { title: "高台寺 (京都府)", lat: 34.9995, lng: 135.7816, zoom: 14, desc: "11月は秋の京都の紅葉ライトアップの全盛期。逆さ紅葉が池の水面に映る景色は言葉を失う美しさです。", url: "https://www.kodaiji.com/", siteName: "鷲峰山 高台寺 公式" },
+            12: { title: "地獄谷野猿公苑 (長野県)", lat: 36.7327, lng: 138.4621, zoom: 12, desc: "世界で唯一、温泉に浸かる野生のニホンザル（スノーモンキー）が見られる冬の隠れた人気スポットです。", url: "https://jigokudani-yaenkoen.co.jp/", siteName: "地獄谷野猿公苑 公式" }
+        };
 
-        // 地図の初期化
         function initMap() {
-            // 京都を中心にマップを作成
-            map = L.map('map', { zoomControl: false }).setView([35.0116, 135.7681], 13);
+            const initialData = monthlyDestinations[1];
+            map = L.map('map', { zoomControl: false }).setView([initialData.lat, initialData.lng], initialData.zoom);
 
-            // 地図の見た目を設定（オープンストリートマップ）
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            // マーカーを管理するグループを作成
             markerGroup = L.layerGroup().addTo(map);
-
-            // ピンを配置
-            touristSpots.forEach(spot => {
-                const marker = L.marker([spot.lat, spot.lng]);
-                
-                // クリックイベントで左パネルを書き換え
-                marker.on('click', () => {
-                    document.getElementById('spot-title').innerText = spot.title;
-                    document.getElementById('spot-desc').innerText = spot.desc;
-                    map.panTo([spot.lat, spot.lng]);
-                });
-
-                marker.addTo(markerGroup);
-            });
+            updateMapForMonth(1);
         }
 
-        // スイッチでピンの表示/非表示切り替え
+        function updateMapForMonth(month) {
+            markerGroup.clearLayers();
+            const data = monthlyDestinations[month];
+            if (!data) return;
+
+            const marker = L.marker([data.lat, data.lng]);
+            
+            marker.on('click', () => {
+                showSpotDetails(data.title, data.desc);
+                map.panTo([data.lat, data.lng]);
+            });
+
+            if (document.getElementById('toggle-markers').checked) {
+                marker.addTo(markerGroup);
+            }
+
+            map.flyTo([data.lat, data.lng], data.zoom, {
+                animate: true,
+                duration: 1.2 
+            });
+
+            showSpotDetails(data.title, data.desc);
+            
+            // 右下のホームページ用リンクとボタン文字を、動いた先の観光地のものに更新
+            const linkElement = document.getElementById('hp-link');
+            const btnTextElement = document.getElementById('hp-btn-text');
+            linkElement.href = data.url;
+            btnTextElement.innerText = `${data.siteName}へ`;
+        }
+
+        function showSpotDetails(title, desc) {
+            document.getElementById('spot-title').innerText = title;
+            document.getElementById('spot-desc').innerText = desc;
+        }
+
+        document.getElementById('time-slider').addEventListener('input', function() {
+            const selectedMonth = parseInt(this.value);
+            document.getElementById('month-display').innerText = `選択中: ${selectedMonth}月`;
+            updateMapForMonth(selectedMonth);
+        });
+
         document.getElementById('toggle-markers').addEventListener('change', function() {
+            const currentMonth = parseInt(document.getElementById('time-slider').value);
             if (this.checked) {
-                map.addLayer(markerGroup);
+                updateMapForMonth(currentMonth);
             } else {
-                map.removeLayer(markerGroup);
+                markerGroup.clearLayers();
             }
         });
 
-        // 初期化実行
         window.onload = initMap;
     </script>
 </body>

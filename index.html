@@ -40,10 +40,8 @@
 
         .logo-area { display: flex; align-items: center; gap: 12px; }
         
-        /* 💡 修正箇所: 画像が丸枠からはみ出さないように overflow: hidden; を追加 */
         .logo-icon { width: 45px; height: 45px; border: 2px solid var(--text-main); border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         
-        /* 💡 追加箇所: イラスト画像が枠内にぴったり収まるようにする設定 */
         .logo-icon img { width: 100%; height: 100%; object-fit: cover; }
         
         .logo-title h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; }
@@ -98,7 +96,8 @@
             height: calc(100% - 120px);
         }
 
-        .panel-img { width: 100%; height: 140px; background: #000000; object-fit: cover; }
+        /* 💡 修正箇所: 画像がない時に黒い背景が見えないよう、また画像が未設定の時は非表示にできるように調整 */
+        .panel-img { width: 100%; height: 140px; background: #e0ddd5; object-fit: cover; display: block; }
         
         .panel-content { padding: 15px; overflow-y: auto; flex: 1; font-size: 0.85rem; }
         .panel-content h2 { margin: 0 0 8px 0; font-size: 1.2rem; }
@@ -210,7 +209,7 @@
         <div class="ui-overlay">
             
             <div class="info-panel">
-                <div class="panel-img"></div>
+                <img id="spot-img" class="panel-img" src="" alt="観光地画像">
                 <div class="panel-content">
                     <h2 id="spot-title">白川郷 (岐阜県)</h2>
                     <p id="spot-desc">下部のタイムラインバーを動かすと、各月のおすすめ観光地にピンが移動します。ピンを直接クリックしても詳細が表示されます。</p>
@@ -255,19 +254,20 @@
         let map;
         let markerGroup;
 
+        // 💡 修正箇所: imgSrc のパスをすべてローカルの `.png` ファイル名に変更しました
         const monthlyDestinations = {
-            1: { title: "白川郷 (岐阜県)", lat: 36.2563, lng: 136.9061, zoom: 11, desc: "1月は一面の銀世界と、幻想的な合掌造り集落のライトアップが美しい積雪のピークシーズンです。", url: "https://shirakawa-go.gr.jp/", siteName: "白川郷 公式HP" },
-            2: { title: "札幌 (北海道)", lat: 43.0621, lng: 141.3544, zoom: 12, desc: "2月上旬には大通公園を中心に「さっぽろ雪まつり」が開催され、迫力ある大雪氷像が並びます。", url: "https://www.snowfes.com/", siteName: "さっぽろ雪まつり 公式" },
-            3: { title: "河津 (静岡県)", lat: 34.7471, lng: 138.9272, zoom: 13, desc: "ひと足早く咲き誇る「河津桜」のシーズン。ピンク色の並木道と菜の花のコントラストが絶景です。", url: "https://www.kawazu-onsen.com/sakura/", siteName: "河津桜まつり 公式" },
-            4: { title: "清水寺 (京都府)", lat: 34.9949, lng: 135.7850, zoom: 14, desc: "4月は満開の桜が古都の街並みを彩ります。清水の舞台から見下ろす桜の海は圧巻です。", url: "https://www.kiyomizudera.or.jp/", siteName: "音羽山 清水寺 公式" },
-            5: { title: "富士五湖 (山梨県)", lat: 35.4983, lng: 138.7565, zoom: 11, desc: "新緑が映える季節。富士芝桜まつりなど、残雪の富士山と鮮やかな花の共演が見事です。", url: "https://www.shibazakura.jp/", siteName: "富士芝桜まつり 公式" },
-            6: { title: "美瑛・富良野 (北海道)", lat: 43.5902, lng: 142.4644, zoom: 11, desc: "初夏の北海道は気候も爽やか。6月下旬からは広大なラベンダー畑が徐々に紫色に染まり始めます。", url: "https://www.farm-tomita.co.jp/", siteName: "ファーム富田 公式" },
-            7: { title: "博多 (福岡県)", lat: 33.5904, lng: 130.4206, zoom: 13, desc: "7月は「博多祇園山笠」の熱気に包まれる季節。博多の街を駆け抜ける聁き山笠が夏の到来を告げます。", url: "https://www.hakatayamakasa.com/", siteName: "博多祇園山笠 公式" },
-            8: { title: "大曲 (秋田県)", lat: 39.4651, lng: 140.4735, zoom: 12, desc: "日本の夏の風物詩、全国花火競技大会（大曲の花火）が開催され、夜空に最高峰の芸術が打ち上がります。", url: "https://www.oomagari-hanabi.com/", siteName: "大曲の花火 公式" },
-            9: { title: "嵐山 (京都府)", lat: 35.0156, lng: 135.6715, zoom: 13, desc: "夏の暑さが和らぎ、澄んだ秋空が広がる季節。桂川に架かる渡月橋や竹林の小径の散策が快適です。", url: "https://ja.kyoto.travel/", siteName: "京都観光Navi 公式" },
-            10: { title: "日光東照宮 (栃木県)", lat: 36.7581, lng: 139.5992, zoom: 12, desc: "日本屈指の紅葉の名所。10月中旬からいろは坂や中禅寺湖周辺が見事な紅葉に包まれます。", url: "https://www.toshogu.jp/", siteName: "日光東照宮 公式" },
-            11: { title: "高台寺 (京都府)", lat: 34.9995, lng: 135.7816, zoom: 14, desc: "11月は秋の京都の紅葉ライトアップの全盛期。逆さ紅葉が池の水面に映る景色は言葉を失う美しさです。", url: "https://www.kodaiji.com/", siteName: "鷲峰山 高台寺 公式" },
-            12: { title: "地獄谷野猿公苑 (長野県)", lat: 36.7327, lng: 138.4621, zoom: 12, desc: "世界で唯一、温泉に浸かる野生のニホンザル（スノーモンキー）が見られる冬の隠れた人気スポットです。", url: "https://jigokudani-yaenkoen.co.jp/", siteName: "地獄谷野猿公苑 公式" }
+            1: { title: "白川郷 (岐阜県)", lat: 36.2563, lng: 136.9061, zoom: 11, desc: "1月は一面の銀世界と、幻想的な合掌造り集落のライトアップが美しい積雪のピークシーズンです。", url: "https://shirakawa-go.gr.jp/", siteName: "白川郷 公式HP", imgSrc: "shirakawago.png" },
+            2: { title: "札幌 (北海道)", lat: 43.0621, lng: 141.3544, zoom: 12, desc: "2月上旬には大通公園を中心に「さっぽろ雪まつり」が開催され、迫力ある大雪氷像が並びます。", url: "https://www.snowfes.com/", siteName: "さっぽろ雪まつり 公式", imgSrc: "sapporo.png" },
+            3: { title: "河津 (静岡県)", lat: 34.7471, lng: 138.9272, zoom: 13, desc: "ひと足早く咲き誇る「河津桜」のシーズン。ピンク色の並木道と菜の花のコントラストが絶景です。", url: "https://www.kawazu-onsen.com/sakura/", siteName: "河津桜まつり 公式", imgSrc: "kawazu.png" },
+            4: { title: "清水寺 (京都府)", lat: 34.9949, lng: 135.7850, zoom: 14, desc: "4月は満開の桜が古都の街並みを彩ります。清水の舞台から見下ろす桜の海は圧巻です。", url: "https://www.kiyomizudera.or.jp/", siteName: "音羽山 清水寺 公式", imgSrc: "kiyomizudera.png" },
+            5: { title: "富士五湖 (山梨県)", lat: 35.4983, lng: 138.7565, zoom: 11, desc: "新緑が映える季節。富士芝桜まつりなど、残雪の富士山と鮮やかな花の共演が見事です。", url: "https://www.shibazakura.jp/", siteName: "富士芝桜まつり 公式", imgSrc: "fujigoko.png" },
+            6: { title: "美瑛・富良野 (北海道)", lat: 43.5902, lng: 142.4644, zoom: 11, desc: "初夏の北海道は気候も爽やか。6月下旬からは広大なラベンダー畑が徐々に紫色に染まり始めます。", url: "https://www.farm-tomita.co.jp/", siteName: "ファーム富田 公式", imgSrc: "biei_furano.png" },
+            7: { title: "博多 (福岡県)", lat: 33.5904, lng: 130.4206, zoom: 13, desc: "7月は「博多祇園山笠」の熱気に包まれる季節。博多の街を駆け抜ける聁き山笠が夏の到来を告げます。", url: "https://www.hakatayamakasa.com/", siteName: "博多祇園山笠 公式", imgSrc: "hakata.png" },
+            8: { title: "大曲 (秋田県)", lat: 39.4651, lng: 140.4735, zoom: 12, desc: "日本の夏の風物詩、全国花火競技大会（大曲の花火）が開催され、夜空に最高峰の芸術が打ち上がります。", url: "https://www.oomagari-hanabi.com/", siteName: "大曲の花火 公式", imgSrc: "omagari.png" },
+            9: { title: "嵐山 (京都府)", lat: 35.0156, lng: 135.6715, zoom: 13, desc: "夏の暑さが和らぎ、澄んだ秋空が広がる季節。桂川に架かる渡月橋や竹林の小径の散策が快適です。", url: "https://ja.kyoto.travel/", siteName: "京都観光Navi 公式", imgSrc: "arashiyama.png" },
+            10: { title: "日光東照宮 (栃木県)", lat: 36.7581, lng: 139.5992, zoom: 12, desc: "日本屈指の紅葉の名所。10月中旬からいろは坂や中禅寺湖周辺が見事な紅葉に包まれます。", url: "https://www.toshogu.jp/", siteName: "日光東照宮 公式", imgSrc: "nikko.png" },
+            11: { title: "高台寺 (京都府)", lat: 34.9995, lng: 135.7816, zoom: 14, desc: "11月は秋の京都の紅葉ライトアップの全盛期。逆さ紅葉が池の水面に映る景色は言葉を失う美しさです。", url: "https://www.kodaiji.com/", siteName: "鷲峰山 高台寺 公式", imgSrc: "kodaiji.png" },
+            12: { title: "地獄谷野猿公苑 (長野県)", lat: 36.7327, lng: 138.4621, zoom: 12, desc: "世界で唯一、温泉に浸かる野生のニホンザル（スノーモンキー）が見られる冬の隠れた人気スポットです。", url: "https://jigokudani-yaenkoen.co.jp/", siteName: "地獄谷野猿公苑 公式", imgSrc: "jigokudani.png" }
         };
 
         function initMap() {
@@ -291,7 +291,7 @@
             const marker = L.marker([data.lat, data.lng]);
             
             marker.on('click', () => {
-                showSpotDetails(data.title, data.desc);
+                showSpotDetails(data.title, data.desc, data.imgSrc);
                 map.panTo([data.lat, data.lng]);
             });
 
@@ -304,7 +304,7 @@
                 duration: 1.2 
             });
 
-            showSpotDetails(data.title, data.desc);
+            showSpotDetails(data.title, data.desc, data.imgSrc);
             
             const linkElement = document.getElementById('hp-link');
             const btnTextElement = document.getElementById('hp-btn-text');
@@ -312,9 +312,18 @@
             btnTextElement.innerText = `${data.siteName}へ`;
         }
 
-        function showSpotDetails(title, desc) {
+        function showSpotDetails(title, desc, imgSrc) {
             document.getElementById('spot-title').innerText = title;
             document.getElementById('spot-desc').innerText = desc;
+            
+            // 💡 修正箇所: 画像が存在しない（または空文字）場合は画像エリアを表示しないか、パスを設定する
+            const imgElement = document.getElementById('spot-img');
+            if (imgSrc) {
+                imgElement.src = imgSrc;
+                imgElement.style.display = 'block';
+            } else {
+                imgElement.style.display = 'none';
+            }
         }
 
         document.getElementById('time-slider').addEventListener('input', function() {

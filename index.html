@@ -54,6 +54,7 @@
             flex: 1;
             position: relative;
             box-sizing: border-box;
+            min-height: calc(100vh - 70px);
         }
 
         #map {
@@ -183,74 +184,113 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .hp-btn:hover { background-color: var(--btn-hover); }
         .hp-btn:active { transform: scale(0.98); }
-        .hp-btn-icon { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; display: inline-block; }
         
-        /* --- スマホ専用：下半分に紹介文・スライダー・HPリンクを縦積み --- */
+        /* --- スマホ専用：地図の下に情報カード・スライダー・HPリンクを縦積み --- */
         @media (max-width: 768px) {
-            header { padding: 8px 10px; }
+            body { min-height: 100vh; }
 
-            /* 地図は画面上半分に収める */
-            #map { height: 50vh; position: absolute; top: 0; left: 0; right: 0; }
+            header {
+                padding: 8px 10px;
+                position: sticky;
+                top: 0;
+            }
 
-            /* UIは重ねたまま、個別要素を下半分へ固定 */
-            .ui-overlay { padding: 0 12px; pointer-events: none; }
+            .logo-area {
+                padding: 4px 10px;
+                border-radius: 12px;
+            }
 
-            /* 紹介文カード：下から2つ目（スライダーの上）に配置。高さを抑えて要約のみ表示 */
-            .info-panel {
-                position: absolute;
-                bottom: calc(50vh + 160px);
-                left: 12px;
-                right: 12px;
+            .logo-icon { width: 38px; height: 38px; }
+            .logo-title h1 { font-size: 0.95rem; }
+
+            .main-container {
+                min-height: calc(100vh - 58px);
+            }
+
+            #map {
+                height: 50vh;
+                position: relative;
+                top: auto;
+                left: auto;
+                right: auto;
+            }
+
+            .ui-overlay {
+                position: relative;
+                height: auto;
+                padding: 12px;
+                pointer-events: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .bottom-container {
+                position: static;
+                display: flex;
+                flex-direction: row;
+                align-items: stretch;
+                gap: 12px;
+                pointer-events: auto;
+                left: auto;
+                right: auto;
+                bottom: auto;
+            }
+
+            .info-panel,
+            .timeline-box,
+            .hp-link-box,
+            .control-panel {
+                position: static;
                 width: auto;
-                height: 140px;
-                max-height: 140px;
+                max-width: none;
+                left: auto;
+                right: auto;
+                top: auto;
+                bottom: auto;
+                height: auto;
+                margin: 0;
+            }
+
+            .info-panel {
                 border-radius: 12px;
                 overflow: hidden;
                 box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-                pointer-events: auto;
             }
 
             .panel-img { height: 70px; }
-            .panel-content { padding: 10px; font-size: 0.82rem; }
+            .panel-content { padding: 10px; font-size: 0.78rem; }
+            .panel-content h2 { font-size: 1rem; }
+            .panel-content p { margin-bottom: 8px; }
 
-            /* スライダー（観光シーズン選択）は紹介文の下、HPリンクの上 */
-            .timeline-box {
-                position: absolute;
-                bottom: calc(50vh + 70px);
-                left: 12px;
-                right: 12px;
-                width: auto;
+            .timeline-box,
+            .hp-link-box {
                 padding: 12px 16px;
                 border-radius: 16px;
-                pointer-events: auto;
-            }
-
-            /* HPリンクは一番下に固定 */
-            .hp-link-box {
-                position: absolute;
-                bottom: 12px;
-                left: 12px;
-                right: 12px;
                 width: auto;
-                padding: 12px 16px;
-                border-radius: 12px;
-                pointer-events: auto;
             }
 
-            /* コントロールは右上に小さく残す */
+            .timeline-box {
+                flex: 6;
+            }
+
+            .hp-link-box {
+                flex: 4;
+            }
+
             .control-panel {
-                position: absolute;
-                top: 64px;
-                right: 12px;
-                width: 150px;
+                display: none;
                 padding: 10px;
                 border-radius: 12px;
-                pointer-events: auto;
+            }
+
+            .control-item {
+                font-size: 0.76rem;
+                margin-bottom: 8px;
             }
         }
     </style>
@@ -282,12 +322,8 @@
                 </div>
             </div>
 
-            <div class="control-panel">
-                <div class="control-item">
-                    <span>目的地 (観光地ピン)</span>
-                    <label class="switch"><input type="checkbox" id="toggle-markers" checked><span class="slider"></span></label>
-                </div>
-                <div class="control-item"><span>アクティビティ</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+            <div class="control-panel" aria-hidden="true">
+                <label class="switch"><input type="checkbox" id="toggle-markers" checked><span class="slider"></span></label>
             </div>
 
             <div class="bottom-container">
@@ -307,7 +343,7 @@
                 <div class="hp-link-box">
                     <div class="hp-header">オフィシャル情報</div>
                     <a href="https://shirakawa-go.gr.jp/" target="_blank" class="hp-btn" id="hp-link">
-                        <img src="IMG_2622.jpg" alt="アイコン" class="hp-btn-icon"> <span id="hp-btn-text">白川郷 公式HPへ</span>
+                        <span id="hp-btn-text">白川郷 公式HPへ</span>
                     </a>
                 </div>
             </div>

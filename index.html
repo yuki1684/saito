@@ -322,10 +322,6 @@
                 </div>
             </div>
 
-            <div class="control-panel" aria-hidden="true">
-                <label class="switch"><input type="checkbox" id="toggle-markers" checked><span class="slider"></span></label>
-            </div>
-
             <div class="bottom-container">
                 <div class="timeline-box">
                     <div class="timeline-title">
@@ -397,9 +393,7 @@
                 map.panTo([data.lat, data.lng]);
             });
 
-            if (document.getElementById('toggle-markers').checked) {
-                marker.addTo(markerGroup);
-            }
+            marker.addTo(markerGroup);
 
             map.flyTo([data.lat, data.lng], data.zoom, {
                 animate: true,
@@ -432,15 +426,6 @@
             const selectedMonth = parseInt(this.value);
             document.getElementById('month-display').innerText = `選択中: ${selectedMonth}月`;
             updateMapForMonth(selectedMonth);
-        });
-
-        document.getElementById('toggle-markers').addEventListener('change', function() {
-            const currentMonth = parseInt(document.getElementById('time-slider').value);
-            if (this.checked) {
-                updateMapForMonth(currentMonth);
-            } else {
-                markerGroup.clearLayers();
-            }
         });
 
         window.onload = initMap;

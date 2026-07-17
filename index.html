@@ -150,8 +150,8 @@
             width: 500px; 
         }
         
-        .timeline-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between;}
-        .current-month-display { color: var(--accent-color); font-size: 1rem; }
+        .timeline-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; gap: 8px; white-space: nowrap; }
+        .current-month-display { color: var(--accent-color); font-size: 0.9rem; }
 
         .slider-wrapper { width: 100%; }
         .timeline-slider { width: 100%; accent-color: #bfa15f; cursor: pointer; }
@@ -276,6 +276,14 @@
 
             .timeline-box {
                 flex: 6;
+            }
+
+            .timeline-title {
+                font-size: 0.7rem;
+            }
+
+            .current-month-display {
+                font-size: 0.7rem;
             }
 
             .hp-link-box {
